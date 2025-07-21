@@ -1,30 +1,9 @@
 [build]
   command = "npm install && cd client && npm install && npm run build"
   publish = "client/build"
-  functions = "netlify/functions"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
 
 [functions]
   directory = "netlify/functions"
-
-[[redirects]]
-  from = "/api/chat"
-  to = "/.netlify/functions/chat"
-  status = 200
-
-[[redirects]]
-  from = "/api/health"
-  to = "/.netlify/functions/health"
-  status = 200
-
-[[redirects]]
-  from = "/api/test"
-  to = "/.netlify/functions/test"
-  status = 200
 
 [build.environment]
   NODE_VERSION = "18"
