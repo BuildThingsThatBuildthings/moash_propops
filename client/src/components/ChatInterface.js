@@ -37,6 +37,26 @@ const Header = styled.div`
   }
 `;
 
+const QueryCounter = styled.div`
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  display: inline-block;
+  
+  .count {
+    font-weight: bold;
+    color: ${props => props.remaining <= 2 ? '#ff6b6b' : props.remaining <= 5 ? '#feca57' : '#48dbfb'};
+  }
+  
+  .reset-time {
+    opacity: 0.7;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+`;
+
 const MessagesContainer = styled.div`
   flex: 1;
   overflow-y: auto;
@@ -216,6 +236,11 @@ const ChatInterface = () => {
 
   useEffect(scrollToBottom, [messages]);
 
+  // Debug rate limit changes
+  useEffect(() => {
+    console.log('Rate limit state changed:', rateLimit);
+  }, [rateLimit]);
+
   const quickActions = [
     "What is the rent?",
     "How do late fees work?",
@@ -245,8 +270,10 @@ const ChatInterface = () => {
 
       if (response.data.success) {
         // Update rate limit info
+        console.log('Rate limit data received:', response.data.rate_limit);
         if (response.data.rate_limit) {
           setRateLimit(response.data.rate_limit);
+          console.log('Rate limit state updated:', response.data.rate_limit);
         }
         
         let assistantMessage;
@@ -323,11 +350,30 @@ const ChatInterface = () => {
     });
   };
 
+  const formatResetTime = (resetTime) => {
+    if (!resetTime) return '';
+    const reset = new Date(resetTime);
+    const now = new Date();
+    
+    // Check if reset is today
+    const isToday = reset.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return `Resets at ${reset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return `Resets tomorrow at 5:00 AM`;
+    }
+  };
+
   return (
     <ChatContainer>
       <Header>
         <h1>PropOps Manager Assistant</h1>
         <p>Ashland MHC Document Generation Tool</p>
+        <QueryCounter remaining={rateLimit.remaining}>
+          <div className="count">{rateLimit.remaining} queries remaining today</div>
+          <div className="reset-time">{formatResetTime(rateLimit.resetTime)}</div>
+        </QueryCounter>
       </Header>
 
       <MessagesContainer>
