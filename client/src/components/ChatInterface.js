@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
+import { API_URL } from '../config/api';
 
 const ChatContainer = styled.div`
   display: flex;
@@ -237,7 +238,7 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('/api/chat', {
+      const response = await axios.post(`${API_URL}/chat`, {
         request: input
       });
 
