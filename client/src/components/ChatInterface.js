@@ -205,6 +205,7 @@ const ChatInterface = () => {
       timestamp: new Date()
     }
   ]);
+  const [rateLimit, setRateLimit] = useState({ limit: 10, remaining: 10, resetTime: null });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -243,6 +244,11 @@ const ChatInterface = () => {
       });
 
       if (response.data.success) {
+        // Update rate limit info
+        if (response.data.rate_limit) {
+          setRateLimit(response.data.rate_limit);
+        }
+        
         let assistantMessage;
         
         if (response.data.response_type === 'information') {
@@ -272,9 +278,28 @@ const ChatInterface = () => {
     } catch (error) {
       console.error('Error generating document:', error);
       
+      let errorText = `Sorry, I encountered an error: ${error.response?.data?.error || error.message}.`;
+      
+      // Handle rate limit exceeded
+      if (error.response?.status === 429) {
+        const errorData = error.response.data;
+        errorText = `${errorData.details || errorText} You have ${errorData.remaining || 0} queries remaining today.`;
+        
+        // Update rate limit info from error response
+        if (errorData.remaining !== undefined) {
+          setRateLimit({
+            limit: errorData.limit || 10,
+            remaining: errorData.remaining,
+            resetTime: errorData.resetTime
+          });
+        }
+      } else {
+        errorText += ' Please try again or rephrase your request.';
+      }
+      
       const errorMessage = {
         id: Date.now() + 1,
-        text: `Sorry, I encountered an error: ${error.response?.data?.error || error.message}. Please try again or rephrase your request.`,
+        text: errorText,
         isUser: false,
         timestamp: new Date(),
         isError: true

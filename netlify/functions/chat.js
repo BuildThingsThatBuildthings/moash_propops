@@ -1,4 +1,5 @@
 const { OpenAI } = require('openai');
+const { checkRateLimit, getClientId, cleanupOldEntries, DAILY_LIMIT } = require('./rate-limiter');
 
 // Ashland MHC policies data
 const policies = {
@@ -42,6 +43,9 @@ exports.handler = async (event, context) => {
   console.log('HTTP Method:', event.httpMethod);
   console.log('Environment check - OPENAI_API_KEY present:', !!process.env.OPENAI_API_KEY);
 
+  // Clean up old rate limit entries
+  cleanupOldEntries();
+
   // Handle CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -60,6 +64,34 @@ exports.handler = async (event, context) => {
       statusCode: 405,
       headers,
       body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
+  // Check rate limit
+  const clientId = getClientId(event);
+  const rateLimitResult = checkRateLimit(clientId);
+  
+  console.log('Rate limit check:', { clientId, rateLimitResult });
+
+  if (!rateLimitResult.allowed) {
+    console.log('Rate limit exceeded for client:', clientId);
+    return {
+      statusCode: 429,
+      headers: {
+        ...headers,
+        'X-RateLimit-Limit': DAILY_LIMIT.toString(),
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': rateLimitResult.resetTime
+      },
+      body: JSON.stringify({
+        success: false,
+        error: 'Daily query limit exceeded',
+        details: `You have reached the daily limit of ${DAILY_LIMIT} queries. Please try again tomorrow.`,
+        limit: DAILY_LIMIT,
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime,
+        currentCount: rateLimitResult.count
+      })
     };
   }
 
@@ -134,11 +166,21 @@ Provide clear, concise, accurate answers about community policies, procedures, f
 
     return {
       statusCode: 200,
-      headers,
+      headers: {
+        ...headers,
+        'X-RateLimit-Limit': DAILY_LIMIT.toString(),
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': rateLimitResult.resetTime
+      },
       body: JSON.stringify({
         success: true,
         response_type: 'information',
         answer: response,
+        rate_limit: {
+          limit: DAILY_LIMIT,
+          remaining: rateLimitResult.remaining,
+          resetTime: rateLimitResult.resetTime
+        },
         metadata: {
           generated_at: new Date().toISOString(),
           ai_model: "gpt-4o-mini",
