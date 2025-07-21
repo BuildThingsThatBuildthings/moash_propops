@@ -1,0 +1,19 @@
+{
+  "name": "propops-manager-assistant",
+  "version": "1.0.0",
+  "description": "Community Manager Document Generation Assistant for Ashland MHC",
+  "main": "server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && node server.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-deps": "cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["property-management", "ai-assistant", "document-generation"],
+  "author": "PropOps",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

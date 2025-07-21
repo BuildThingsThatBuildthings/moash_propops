@@ -1,0 +1,85 @@
+{
+  "community": {
+    "name": "Ashland MHC (Mobile Home Community)",
+    "short_name": "MOASH",
+    "address": "111 East Side Dr., Ashland, MO 65010",
+    "legal_entity": "Ashland Community LLC",
+    "mailing_address": "1050 Glenbrook Way Ste 480-220, Hendersonville, TN 37075"
+  },
+  "management": {
+    "property_manager": "Anthony Thompson",
+    "tenant_contact_phone": "1-800-209-1533",
+    "tenant_contact_email": "TenantHelp@mhcpusa.com",
+    "vendor_phone": "573-303-9061",
+    "vendor_email": "AshlandMHC@mhcpusa.com",
+    "response_time_policy": "72 hours maximum"
+  },
+  "property_stats": {
+    "total_lots": 104,
+    "occupied_lots": 48,
+    "occupancy_rate": "46.15%",
+    "monthly_lot_rent": 290.00,
+    "lease_terms": "Month-to-month with 30-day notice"
+  },
+  "violation_fees": {
+    "rent": {
+      "late_fee_per_day": 15.00,
+      "administration_fee": 25.00,
+      "returned_check_fee": 30.00,
+      "legal_proceedings_threshold": "10th of month"
+    },
+    "pets": {
+      "violation_fee": 100.00,
+      "third_offense_penalty": "pet loses privilege to live in park",
+      "poop_cleanup_fee": 100.00,
+      "administration_fee": 25.00
+    },
+    "dumpsters": {
+      "unauthorized_items_fee": 500.00,
+      "reference": "posted signs and Acceptable Use of Trash Bins flyer"
+    },
+    "parking": {
+      "unauthorized_parking_fee": 25.00,
+      "administration_fee": 25.00
+    },
+    "lawn_maintenance": {
+      "violation_fee": 35.00,
+      "administration_fee": 25.00
+    },
+    "general_violations": {
+      "first_offense": 25.00,
+      "second_offense": 50.00,
+      "third_offense": "can result in eviction",
+      "administration_fee": 25.00
+    },
+    "conduct": {
+      "violation_fee": 100.00,
+      "consequence": "possible eviction for conduct warranting police contact",
+      "administration_fee": 25.00
+    }
+  },
+  "pet_policy": {
+    "screening_required": true,
+    "screening_service": "PetScreening.com",
+    "max_pets": 2,
+    "weight_limits": {
+      "single_pet": "up to 25 pounds",
+      "two_pets": "up to 20 pounds each"
+    },
+    "rent_by_fido_score": {
+      "5_paw": 25.00,
+      "4_paw": 30.00,
+      "3_paw": 35.00,
+      "2_paw": 40.00,
+      "1_paw": 50.00
+    }
+  },
+  "important_rules": {
+    "occupancy": "Only approved tenants listed on application may occupy home",
+    "guest_policy": "Guests staying 2+ nights per week must be approved, $20/person/month",
+    "payment_policy": "Rent due on 1st, late after 5th",
+    "pets_inside_only": "Pets must be kept INSIDE AT ALL TIMES when not being exercised",
+    "heat_tape_requirement": "Working heat tape covered by insulation tubes during winter",
+    "home_age_limit": "Used homes must be 15 years or newer"
+  }
+}
