@@ -1,16 +1,39 @@
 PropOps Community Manager Information Assistant: Complete PRD and Implementation Guide
 PropOps is positioned to transform mobile home park management through an intelligent information assistant. This comprehensive guide provides everything needed to build, deploy, and maintain a community manager knowledge base system using OpenAI's API, with primary focus on instant access to policies, procedures, and community information.
 Tech stack for simple, effective deployment
-The research reveals a clear technology path that balances simplicity with scalability. For frontend development, React with CopilotKit emerges as the optimal choice, providing pre-built AI components like <CopilotPopup /> and <CopilotSidebar /> that dramatically reduce development time. Minchatdev This pairs perfectly with Node.js + Express on the backend, leveraging the official OpenAI SDK v4 for seamless integration. FastAPI
-For data persistence, SQLite offers zero-configuration simplicity during development and can handle production loads up to 10,000 users. When scaling becomes necessary, PostgreSQL provides a smooth migration path with added benefits like vector extensions for semantic search capabilities. The database schema remains straightforward:
-sqlCREATE TABLE conversations (
-id INTEGER PRIMARY KEY,
-user_id TEXT,
-message TEXT,
-role TEXT, -- 'user' or 'assistant'
-timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+The research reveals a clear technology path that balances simplicity with scalability. For frontend development, React with styled-components provides a mobile-first chat interface. This pairs perfectly with Netlify Functions for serverless backend, leveraging the official OpenAI SDK v4 for seamless integration.
+For authentication and data persistence, Supabase provides a complete solution with built-in auth, PostgreSQL database, and Row Level Security. This eliminates the need for separate auth services and provides scalability from day one. The database schema includes user profiles and query tracking:
+```sql
+-- User profiles linked to Supabase Auth
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
+  property_name TEXT DEFAULT 'Ashland MHC',
+  role TEXT DEFAULT 'community_manager',
+  created_at TIMESTAMP DEFAULT NOW()
 );
-Deployment should start with Vercel for the frontend (free tier sufficient for MVPs) and Railway for the backend ($5-20/month), providing automatic deployments and built-in monitoring. This stack delivers production-ready infrastructure for under $30/month during early stages.
+
+-- Track daily query usage per user
+CREATE TABLE user_query_limits (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  query_date DATE NOT NULL,
+  query_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, query_date)
+);
+
+-- Optional: Store conversation history
+CREATE TABLE conversations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  message TEXT,
+  role TEXT, -- 'user' or 'assistant'
+  timestamp TIMESTAMP DEFAULT NOW()
+);
+```
+Deployment uses Netlify for both frontend and serverless functions (free tier sufficient for MVPs), with Supabase providing authentication and database services ($25/month). This stack delivers production-ready infrastructure with built-in auth, automatic deployments, and monitoring for under $30/month during early stages.
 Conversational AI patterns that work
 Research from Nielsen Norman Group and Google's conversation design principles shows that successful chatbots follow linear flows with limited branching. Complex decision trees confuse users; instead, guide them through clear, sequential steps. Nielsen Norman Group +2 For PropOps, this means structuring interactions like:
 Tenant: "I need maintenance help"
@@ -108,6 +131,35 @@ Utility allocation for master-metered communities doorloop
 Visitor registration and overnight guest policies
 
 Industry data shows 75% of property management companies achieve ROI within 12 months through AI automation, with 15-20 hours weekly time savings per property manager. LethubVoiceflow
+Authentication & User Management
+Supabase Auth provides enterprise-grade authentication with minimal implementation complexity:
+- Email/password authentication with secure password hashing
+- JWT tokens with automatic refresh handling
+- Row Level Security (RLS) for data isolation
+- User profiles linked to auth system
+- Rate limiting tracked per user instead of IP address
+
+Implementation requires only:
+```javascript
+// Initialize Supabase client
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Sign up new user
+const { data, error } = await supabase.auth.signUp({
+  email: 'manager@ashlandmhc.com',
+  password: 'secure-password',
+  options: {
+    data: { full_name: 'John Smith', property_name: 'Ashland MHC' }
+  }
+});
+
+// Sign in existing user
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'manager@ashlandmhc.com',
+  password: 'secure-password'
+});
+```
+
 Security architecture for OpenAI integration
 Security must be foundational, not an afterthought. Recent incidents show 84% of organizations experienced API security breaches in 2024, Akamai making robust protection critical.
 API Key Management:

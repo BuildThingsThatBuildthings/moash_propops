@@ -1,38 +1,58 @@
 # PropOps Community Manager Assistant
 
-A document generation tool for community managers at Ashland Mobile Home Community (MHC). This tool helps create standardized notices, violations, and other official documents with consistent JSON structured output.
+An AI-powered information assistant and document generation tool for community managers at Ashland Mobile Home Community (MHC). This tool provides instant access to community policies, procedures, and helps create standardized notices with consistent JSON structured output.
 
 ## Features
 
-- **Violation Notices**: Pet violations, parking violations, lawn maintenance, general rules violations
-- **Late Rent Notices**: Automatic calculation of late fees and total amounts due
-- **Maintenance Notices**: Heat tape inspections, property maintenance requirements
-- **Structured JSON Output**: Consistent formatting for integration with management systems
-- **Mobile-First Design**: Optimized for use on phones and tablets
-- **Natural Language Processing**: Create documents by describing what you need
+### Information Assistant (Primary)
+- **Policy Lookup**: Instant access to rent amounts, fees, community rules
+- **Contact Directory**: Tenant vs vendor numbers, emergency contacts
+- **Fee Calculations**: Automatic calculation of late fees and violation penalties
+- **Procedure Guidance**: Step-by-step help for common manager tasks
+
+### Document Generation (Secondary)
+- **Violation Notices**: Pet violations, parking violations, lawn maintenance
+- **Late Rent Notices**: Automatic calculation with proper legal text
+- **Maintenance Notices**: Heat tape inspections, property requirements
+- **Structured JSON Output**: Consistent formatting for system integration
+
+### Technical Features
+- **Mobile-First Design**: Optimized for phones and tablets
+- **AI-Powered**: Uses OpenAI GPT-4o-mini for cost-effective responses
+- **Authentication**: Optional Supabase integration for user accounts
+- **Rate Limiting**: 10 queries per day (resets at 5am)
+- **Secure**: JWT authentication, Row Level Security, input sanitization
 
 ## Quick Start
 
 ### Prerequisites
 - Node.js 16+ 
 - OpenAI API key
+- (Optional) Supabase account for authentication
 
 ### Installation
 
 1. Clone the repository
 2. Install dependencies:
 ```bash
-npm run install-deps
+npm install
+cd client && npm install
 ```
 
 3. Set up environment variables:
+
+For local development with authentication:
 ```bash
-cd server
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
+cd client
+cp .env.local.example .env.local
+# Edit .env.local and add your Supabase credentials
 ```
 
-4. Start the development servers:
+For Netlify deployment:
+- Add `OPENAI_API_KEY` to Netlify environment variables
+- (Optional) Add Supabase credentials for authentication
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
@@ -41,11 +61,28 @@ This will start:
 - Backend server on http://localhost:5000
 - Frontend on http://localhost:3000
 
+### Supabase Setup (Optional)
+
+To enable user authentication:
+1. Create a Supabase project
+2. Run the SQL from `supabase/schema.sql`
+3. Add credentials to environment variables
+4. See `SUPABASE_SETUP.md` for detailed instructions
+
 ## Usage Examples
 
-### Creating Documents
+### Information Queries (Primary Use)
 
-Simply describe what you need in natural language:
+Ask questions about community policies and procedures:
+
+- **"What is the monthly rent?"** → "$290.00 for lot rent"
+- **"How do late fees work?"** → "$15/day after 5th + $25 admin fee"
+- **"What's the pet policy?"** → Pet screening requirements and fees
+- **"Who do I call for emergencies?"** → Emergency contact information
+
+### Document Generation (Secondary Use)
+
+Create official documents by describing what you need:
 
 - **"Create a pet violation for lot 25"**
 - **"Late rent notice for lot 12, tenant is 5 days late"**

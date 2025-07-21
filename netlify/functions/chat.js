@@ -1,5 +1,6 @@
 const { OpenAI } = require('openai');
 const { checkRateLimit, getClientId, cleanupOldEntries, DAILY_LIMIT } = require('./rate-limiter');
+const { isSupabaseConfigured, checkUserRateLimit, verifyUser } = require('./supabase-client');
 
 // Ashland MHC policies data
 const policies = {
@@ -67,14 +68,30 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // Check rate limit
-  const clientId = getClientId(event);
-  const rateLimitResult = checkRateLimit(clientId);
-  
-  console.log('Rate limit check:', { clientId, rateLimitResult });
+  // Check authentication and rate limit
+  let rateLimitResult;
+  let user = null;
+
+  // Try to get authenticated user
+  const authHeader = event.headers.authorization || event.headers.Authorization;
+  if (isSupabaseConfigured() && authHeader) {
+    user = await verifyUser(authHeader);
+    console.log('Authenticated user:', user?.email);
+  }
+
+  // Use Supabase rate limiting for authenticated users, fallback to IP-based for others
+  if (user) {
+    rateLimitResult = await checkUserRateLimit(user.id);
+    console.log('User rate limit check:', { userId: user.id, rateLimitResult });
+  } else {
+    // Fallback to IP-based rate limiting
+    const clientId = getClientId(event);
+    rateLimitResult = checkRateLimit(clientId);
+    console.log('IP rate limit check:', { clientId, rateLimitResult });
+  }
 
   if (!rateLimitResult.allowed) {
-    console.log('Rate limit exceeded for client:', clientId);
+    console.log('Rate limit exceeded');
     return {
       statusCode: 429,
       headers: {
@@ -184,7 +201,8 @@ Provide clear, concise, accurate answers about community policies, procedures, f
         metadata: {
           generated_at: new Date().toISOString(),
           ai_model: "gpt-4o-mini",
-          tokens_used: completion.usage?.total_tokens || 0
+          tokens_used: completion.usage?.total_tokens || 0,
+          authenticated_user: user?.email || null
         }
       })
     };

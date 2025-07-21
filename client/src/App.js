@@ -1,11 +1,14 @@
 import React from 'react';
-import ChatInterface from './components/ChatInterface';
+import { AuthProvider } from './contexts/AuthContext';
+import AuthWrapper from './components/AuthWrapper';
 
 function App() {
   return (
-    <div className="App">
-      <ChatInterface />
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <AuthWrapper />
+      </div>
+    </AuthProvider>
   );
 }
 

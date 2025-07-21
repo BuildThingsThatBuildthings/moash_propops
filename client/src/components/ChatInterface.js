@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { API_URL } from '../config/api';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const ChatContainer = styled.div`
   display: flex;
@@ -24,6 +26,7 @@ const Header = styled.div`
   color: white;
   padding: 1rem;
   text-align: center;
+  position: relative;
   
   h1 {
     margin: 0;
@@ -34,6 +37,41 @@ const Header = styled.div`
     margin: 0.5rem 0 0 0;
     opacity: 0.8;
     font-size: 0.9rem;
+  }
+`;
+
+const UserInfo = styled.div`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  text-align: right;
+  font-size: 0.85rem;
+  
+  .email {
+    opacity: 0.9;
+    margin-bottom: 0.25rem;
+  }
+  
+  button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    position: static;
+    margin-top: 0.5rem;
+    text-align: center;
   }
 `;
 
@@ -217,6 +255,7 @@ const QuickActionButton = styled.button`
 `;
 
 const ChatInterface = () => {
+  const { user, profile, signOut, isSupabaseConfigured } = useAuth();
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -264,9 +303,18 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
+      // Get auth token if available
+      const headers = {};
+      if (isSupabaseConfigured && user) {
+        const session = await supabase.auth.getSession();
+        if (session?.data?.session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.data.session.access_token}`;
+        }
+      }
+
       const response = await axios.post(`${API_URL}/chat`, {
         request: input
-      });
+      }, { headers });
 
       if (response.data.success) {
         // Update rate limit info
@@ -368,6 +416,12 @@ const ChatInterface = () => {
   return (
     <ChatContainer>
       <Header>
+        {isSupabaseConfigured && user && (
+          <UserInfo>
+            <div className="email">{user.email}</div>
+            <button onClick={signOut}>Sign Out</button>
+          </UserInfo>
+        )}
         <h1>PropOps Manager Assistant</h1>
         <p>Ashland MHC Document Generation Tool</p>
         <QueryCounter remaining={rateLimit.remaining}>
