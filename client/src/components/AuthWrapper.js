@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ChatInterface from './ChatInterface';
 import LoginForm from './LoginForm';
 import SignupForm from './SignupForm';
+import SetupRequired from './SetupRequired';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -44,25 +45,6 @@ const Logo = styled.div`
   }
 `;
 
-const NoAuthMessage = styled.div`
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 8px;
-  text-align: center;
-  
-  h3 {
-    color: #856404;
-    margin: 0 0 1rem 0;
-  }
-  
-  p {
-    color: #856404;
-    margin: 0;
-  }
-`;
 
 const AuthWrapper = () => {
   const { user, loading, isAuthenticated, isSupabaseConfigured } = useAuth();
@@ -77,20 +59,9 @@ const AuthWrapper = () => {
     );
   }
 
-  // If Supabase is not configured, show the chat interface without auth
+  // If Supabase is not configured, require setup before allowing access
   if (!isSupabaseConfigured) {
-    return (
-      <Container>
-        <NoAuthMessage>
-          <h3>Authentication Not Configured</h3>
-          <p>
-            The app is running without authentication. To enable user accounts and 
-            per-user rate limiting, please configure Supabase credentials.
-          </p>
-        </NoAuthMessage>
-        <ChatInterface />
-      </Container>
-    );
+    return <SetupRequired />;
   }
 
   // If authenticated, show the chat interface
