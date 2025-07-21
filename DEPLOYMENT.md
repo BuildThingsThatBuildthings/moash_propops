@@ -28,7 +28,18 @@ docker-compose up -d
 
 ### Option 3: Cloud Deployment
 
-#### Frontend (Netlify)
+#### Full-Stack Deployment (Netlify + Functions)
+1. Connect your GitHub repository to Netlify
+2. Set build settings:
+   - Base directory: `client`
+   - Build command: `npm run build`
+   - Publish directory: `client/build`
+3. Add environment variables in Netlify dashboard:
+   - `OPENAI_API_KEY=your_openai_api_key_here`
+4. Deploy automatically on push to main
+5. Netlify will automatically deploy the serverless functions
+
+#### Frontend Only (Netlify + External Backend)
 1. Connect your GitHub repository to Netlify
 2. Set build settings:
    - Base directory: `client`
