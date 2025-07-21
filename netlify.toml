@@ -9,3 +9,7 @@
   NODE_VERSION = "18"
   NPM_VERSION = "9"
   CI = "false"
+  # Disable secrets scanning for environment variables that are meant to be in frontend
+  SECRETS_SCAN_OMIT_KEYS = "REACT_APP_SUPABASE_URL,REACT_APP_SUPABASE_ANON_KEY"
+  # Exclude setup documentation files from secrets scanning
+  SECRETS_SCAN_OMIT_PATHS = "client/src/components/SetupRequired.js,SUPABASE_SETUP.md"
