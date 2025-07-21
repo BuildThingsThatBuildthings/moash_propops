@@ -13,6 +13,9 @@
   "keywords": ["property-management", "ai-assistant", "document-generation"],
   "author": "PropOps",
   "license": "MIT",
+  "dependencies": {
+    "openai": "^4.0.0"
+  },
   "devDependencies": {
     "concurrently": "^8.2.0"
   }

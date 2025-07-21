@@ -38,6 +38,10 @@ const policies = {
 };
 
 exports.handler = async (event, context) => {
+  console.log('Chat function invoked');
+  console.log('HTTP Method:', event.httpMethod);
+  console.log('Environment check - OPENAI_API_KEY present:', !!process.env.OPENAI_API_KEY);
+
   // Handle CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -46,10 +50,12 @@ exports.handler = async (event, context) => {
   };
 
   if (event.httpMethod === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return { statusCode: 200, headers };
   }
 
   if (event.httpMethod !== 'POST') {
+    console.log('Invalid HTTP method:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
@@ -57,10 +63,27 @@ exports.handler = async (event, context) => {
     };
   }
 
+  // Check for OpenAI API key
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OPENAI_API_KEY not found in environment variables');
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to Netlify environment variables.',
+        help: 'Go to Site settings > Environment variables in Netlify dashboard',
+        debug: 'This error occurs when the OPENAI_API_KEY environment variable is not set in Netlify.'
+      })
+    };
+  }
+
   try {
+    console.log('Parsing request body');
     const { request } = JSON.parse(event.body);
 
     if (!request || typeof request !== 'string') {
+      console.log('Invalid request format');
       return {
         statusCode: 400,
         headers,
@@ -68,7 +91,10 @@ exports.handler = async (event, context) => {
       };
     }
 
+    console.log('Request received:', request.substring(0, 50) + '...');
+
     // Initialize OpenAI
+    console.log('Initializing OpenAI client');
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
@@ -92,6 +118,7 @@ FEES AND POLICIES:
 
 Provide clear, concise, accurate answers about community policies, procedures, fees, and information. Always reference specific amounts and policies when applicable.`;
 
+    console.log('Sending request to OpenAI');
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -102,6 +129,7 @@ Provide clear, concise, accurate answers about community policies, procedures, f
       max_tokens: 1000
     });
 
+    console.log('OpenAI response received');
     const response = completion.choices[0].message.content.trim();
 
     return {
@@ -121,12 +149,28 @@ Provide clear, concise, accurate answers about community policies, procedures, f
 
   } catch (error) {
     console.error('Chat function error:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Check for specific OpenAI errors
+    if (error.code === 'invalid_api_key') {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Invalid OpenAI API key. Please check your API key in Netlify environment variables.',
+          metadata: { generated_at: new Date().toISOString() }
+        })
+      };
+    }
+    
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
         success: false,
         error: error.message,
+        debug: process.env.NODE_ENV !== 'production' ? error.stack : undefined,
         metadata: { generated_at: new Date().toISOString() }
       })
     };
